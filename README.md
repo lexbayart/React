@@ -1,16 +1,37 @@
 # 🔴 React
 
-**The red pill for your brain.**
+## 🧠 What is this?
 
-You're stuck. In a game. In a series. In a conversation. In that gray fog where nothing matters and you can't remember a single thing you actually enjoy doing.
+You know that feeling when you're stuck in a game, binge-watching YouTube, or just staring at the wall — and your brain is so full of junk that you can't remember a single thing you actually *enjoy* doing?
 
-Your brain is full. RAM is maxed out. The good ideas — the ones that would actually make you happy — are buried under useless junk.
+**React** is the red pill.
 
-React doesn't ask "how are you?" It doesn't set reminders. It doesn't track your sleep.
+It doesn't ask "how are you?"  
+It doesn't set reminders.  
+It doesn't track your sleep.
 
 It just gives you **4 options**. Things you've chosen before when you felt exactly like this.
 
 👇 Tap an action. The app closes. You go do it.
+
+---
+
+## 📱 Download
+
+**Option 1: Install via ADB**
+```bash
+adb install app-debug.apk
+```
+
+**Option 2: Manual install**
+
+Download the APK from [Releases](https://github.com/lexbayart/React/releases)
+
+Or clone and build yourself.
+
+**Requirements:** Android 13+
+
+---
 
 ## 🎮 8 states
 
@@ -58,7 +79,7 @@ The red pill. Choose to wake up. Choose to remember what you love.
 
 ## 👤 Made by @lexbayart
 
-Private project. For personal use.
+Open source. For everyone.
 
 ---
 

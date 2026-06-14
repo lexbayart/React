@@ -15,12 +15,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.react.app.data.database.Action
 import com.react.app.data.database.State
 import com.react.app.data.database.StateActionUsage
-import com.react.app.utils.ExportUtils
+import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
 
 @Composable
@@ -40,12 +42,14 @@ fun StatsScreen(
     usages: List<StateActionUsage>,
     totalSessions: Int,
     onBack: () -> Unit,
-    onExport: () -> Unit
+    onExport: () -> Unit,
+    actions: List<Action> = emptyList()
 ) {
     val context = LocalContext.current
     val darkBg = if (isDarkTheme(context)) Color(0xFF121212) else Color(0xFFF5F5F5)
     val cardBg = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
     val textColor = if (isDarkTheme(context)) Color(0xFFFFFFFF) else Color(0xFF333333)
+    val actionMap = actions.associateBy { it.id }
 
     Column(
         modifier = Modifier
@@ -67,7 +71,7 @@ fun StatsScreen(
                 onBack()
             }) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = textColor
                 )
@@ -133,6 +137,7 @@ fun StatsScreen(
                         )
                     } else {
                         for ((idx, usage) in stateUsages.withIndex()) {
+                            val actionName = actionMap[usage.action_id]?.title ?: "Unknown action"
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -140,9 +145,9 @@ fun StatsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "${idx + 1}. ${usage.uses}x",
+                                    text = "${idx + 1}. ${actionName} (${usage.uses}x)",
                                     fontSize = 14.sp,
-                                    color = Color(0xFF666666)
+                                    color = textColor
                                 )
                             }
                         }

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.react.app.data.database.State
+import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
 import kotlinx.coroutines.launch
 
@@ -39,9 +40,8 @@ fun StateScreen(
     states: List<State>,
     onStateSelected: (Int) -> Unit,
     onOpenStats: () -> Unit,
-    repository: ReactRepository
+    @Suppress("UNUSED_PARAMETER") repository: com.react.app.data.repository.ReactRepository
 ) {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     var longPressTriggered by remember { mutableStateOf(false) }
@@ -99,8 +99,8 @@ fun StateScreen(
                     val state1 = states[row * 2]
                     val state2 = states[row * 2 + 1]
 
-                    StateButton(state1, onStateSelected, scope, context)
-                    StateButton(state2, onStateSelected, scope, context)
+                    StateButton(state1, onStateSelected, context)
+                    StateButton(state2, onStateSelected, context)
                 }
             }
         }
@@ -111,20 +111,18 @@ fun StateScreen(
 fun StateButton(
     state: State,
     onStateSelected: (Int) -> Unit,
-    scope: androidx.compose.runtime.CoroutineScope,
     context: android.content.Context
 ) {
+    val scope = rememberCoroutineScope()
     val scale = remember { Animatable(1f) }
+    val darkBg = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(2.dp)
-            .background(
-                color = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .scale(scale)
+            .background(darkBg, RoundedCornerShape(12.dp))
+            .scale(scale.value)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -145,10 +143,4 @@ fun StateButton(
             textAlign = TextAlign.Center
         )
     }
-}
-
-private fun isDarkTheme(context: android.content.Context): Boolean {
-    val resources = context.resources
-    val config = resources.configuration
-    return config.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
 }

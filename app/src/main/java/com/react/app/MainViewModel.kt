@@ -4,10 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.react.app.data.database.Log
 import com.react.app.data.database.State
 import com.react.app.data.database.StateActionUsage
 import com.react.app.data.repository.ReactRepository
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
@@ -24,38 +26,26 @@ class MainViewModel : ViewModel() {
         private set
 
     fun loadStates(repository: ReactRepository) {
-        Thread {
-            val result = repository.getAllStates()
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                states = result
-            }
-        }.start()
+        viewModelScope.launch {
+            states = repository.getAllStates()
+        }
     }
 
     fun loadUsages(repository: ReactRepository) {
-        Thread {
-            val result = repository.getAllUsages()
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                usages = result
-            }
-        }.start()
+        viewModelScope.launch {
+            usages = repository.getAllUsages()
+        }
     }
 
     fun loadLogs(repository: ReactRepository) {
-        Thread {
-            val result = repository.getAllLogs()
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                logs = result
-            }
-        }.start()
+        viewModelScope.launch {
+            logs = repository.getAllLogs()
+        }
     }
 
     fun loadTotalSessions(repository: ReactRepository) {
-        Thread {
-            val result = repository.getTotalSessions()
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                totalSessions = result
-            }
-        }.start()
+        viewModelScope.launch {
+            totalSessions = repository.getTotalSessions()
+        }
     }
 }

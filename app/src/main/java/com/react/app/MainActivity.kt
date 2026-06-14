@@ -7,18 +7,30 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.react.app.data.database.Action
+import com.react.app.data.database.Log
 import com.react.app.data.database.ReactDatabase
+import com.react.app.data.database.State
+import com.react.app.data.database.StateActionUsage
 import com.react.app.data.repository.ReactRepository
 import com.react.app.ui.screens.ActionScreen
 import com.react.app.ui.screens.StateScreen
 import com.react.app.ui.screens.StatsScreen
 import com.react.app.ui.theme.ReactTheme
 import com.react.app.utils.ExportUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -35,7 +47,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             ReactTheme {
                 val navController = rememberNavController()
-                val viewModel: MainViewModel = viewModel()
+                val context = LocalContext.current
+                var states by mutableStateOf<List<State>?>(null)
+                var usages by mutableStateOf<List<StateActionUsage>?>(null)
+                var logs by mutableStateOf<List<Log>?>(null)
+                var totalSessions by mutableStateOf<Int>(0)
+                var allActions by mutableStateOf<List<Action>?>(null)
+
+                // Load data in background
+                CoroutineScope(Dispatchers.IO).launch {
+                    repository.initializeDefaults()
+                    val loadedStates = repository.getAllStates()
+                    val loadedUsages = repository.getAllUsages()
+                    val loadedLogs = repository.getAllLogs()
+                    val loadedSessions = repository.getTotalSessions()
+                    val loadedActions = repository.getAllActions()
+                    withContext(Dispatchers.Main) {
+                        states = loadedStates
+                        usages = loadedUsages
+                        logs = loadedLogs
+                        totalSessions = loadedSessions
+                        allActions = loadedActions
+                    }
+                }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
@@ -44,9 +78,9 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("state") {
-                            viewModel.states.value?.let { states ->
+                            states?.let { st ->
                                 StateScreen(
-                                    states = states,
+                                    states = st,
                                     onStateSelected = { stateId ->
                                         navController.navigate("action/$stateId")
                                     },
@@ -72,33 +106,21 @@ class MainActivity : ComponentActivity() {
 
                         composable("stats") {
                             StatsScreen(
-                                states = viewModel.states.value ?: emptyList(),
-                                usages = viewModel.usages.value ?: emptyList(),
-                                totalSessions = viewModel.totalSessions.value ?: 0,
+                                states = states ?: emptyList(),
+                                usages = usages ?: emptyList(),
+                                totalSessions = totalSessions,
                                 onBack = { navController.popBackStack() },
                                 onExport = {
-                                    val logs = viewModel.logs.value ?: emptyList()
-                                    val usages = viewModel.usages.value ?: emptyList()
-                                    ExportUtils.exportStats(this@MainActivity, logs, usages)
-                                }
+                                    val currentLogs = logs ?: emptyList()
+                                    val currentUsages = usages ?: emptyList()
+                                    ExportUtils.exportStats(context, currentLogs, currentUsages)
+                                },
+                                actions = allActions ?: emptyList()
                             )
                         }
                     }
                 }
             }
-        }
-
-        // Initialize defaults in background
-        android.os.Handler(android.os.Looper.getMainLooper()).post {
-            Thread {
-                repository.initializeDefaults()
-                android.os.Handler(android.os.Looper.getMainLooper()).post {
-                    viewModel.loadStates(repository)
-                    viewModel.loadUsages(repository)
-                    viewModel.loadLogs(repository)
-                    viewModel.loadTotalSessions(repository)
-                }
-            }.start()
         }
     }
 

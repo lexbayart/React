@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.react.app"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.react.app"
@@ -31,7 +31,7 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
-            debuggable = true
+            isDebuggable = true
         }
     }
 

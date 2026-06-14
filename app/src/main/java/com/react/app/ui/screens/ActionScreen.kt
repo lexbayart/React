@@ -23,8 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.react.app.data.database.Action
 import com.react.app.data.repository.ReactRepository
+import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -98,7 +100,7 @@ fun ActionScreen(
                 onBack()
             }) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = textColor
                 )
@@ -175,7 +177,7 @@ fun ActionScreen(
                 Box(
                     modifier = Modifier
                         .size(64.dp)
-                        .scale(diceScale)
+                        .scale(diceScale.value)
                         .background(Color(0xFFFF8C00), CircleShape)
                         .clickable {
                             context.triggerHapticAndSound()
@@ -215,13 +217,12 @@ fun ActionScreen(
 @Composable
 fun ActionCard(
     action: Action?,
-    index: Int,
+    @Suppress("UNUSED_PARAMETER") index: Int,
     onClick: () -> Unit,
     cardBg: Color,
     textColor: Color,
-    scope: androidx.compose.runtime.CoroutineScope
+    scope: CoroutineScope
 ) {
-    val context = LocalContext.current
     val scale = remember { Animatable(1f) }
     val isVisible = action != null
 
@@ -232,7 +233,7 @@ fun ActionCard(
             .background(cardBg, RoundedCornerShape(16.dp))
             .then(
                 if (action != null) {
-                    Modifier.scale(scale)
+                    Modifier.scale(scale.value)
                 } else {
                     Modifier
                 }
@@ -259,7 +260,7 @@ fun ActionCard(
                 exit = fadeOut() + slideOutVertically { it / 4 }
             ) {
                 Text(
-                    text = action.title,
+                    text = action!!.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -315,10 +316,4 @@ fun AddActionDialog(
             }
         }
     )
-}
-
-private fun isDarkTheme(context: android.content.Context): Boolean {
-    val resources = context.resources
-    val config = resources.configuration
-    return config.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
 }

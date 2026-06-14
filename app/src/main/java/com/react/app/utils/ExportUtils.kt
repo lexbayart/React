@@ -18,25 +18,15 @@ object ExportUtils {
         val json = buildJsonString(logs, usages, timestamp)
         val csv = buildCsvString(logs, usages)
 
-        val jsonIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "application/json"
+        val shareText = "React Stats Export ($timestamp)\n\n--- JSON ---\n\n$json\n\n--- CSV ---\n\n$csv"
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
             putExtra(Intent.EXTRA_SUBJECT, "React Stats Export")
-            putExtra(Intent.EXTRA_TEXT, "Stats exported from React app")
-            putExtra(Intent.EXTRA_STREAM, createTempFile(context, "react_stats_$timestamp.json", json))
+            putExtra(Intent.EXTRA_TEXT, shareText)
         }
 
-        val csvIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/csv"
-            putExtra(Intent.EXTRA_SUBJECT, "React Stats Export CSV")
-            putExtra(Intent.EXTRA_TEXT, "Stats exported from React app")
-            putExtra(Intent.EXTRA_STREAM, createTempFile(context, "react_stats_$timestamp.csv", csv))
-        }
-
-        val shareIntent = Intent.createChooser(jsonIntent, "Export Stats")
-        val shareIntentCsv = Intent.createChooser(csvIntent, "Export Stats")
-
-        context.startActivity(shareIntent)
-        context.startActivity(shareIntentCsv)
+        context.startActivity(Intent.createChooser(shareIntent, "Export Stats"))
     }
 
     private fun buildJsonString(logs: List<Log>, usages: List<StateActionUsage>, timestamp: String): String {
@@ -79,11 +69,5 @@ object ExportUtils {
         }
 
         return sb.toString()
-    }
-
-    private fun createTempFile(context: Context, filename: String, content: String): android.net.Uri {
-        val file = java.io.File(context.cacheDir, filename)
-        file.writeText(content)
-        return android.provider.MediaStore.Files.getContentUri("external_cache")
     }
 }

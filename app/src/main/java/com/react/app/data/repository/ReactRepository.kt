@@ -87,7 +87,6 @@ class ReactRepository(private val database: ReactDatabase) {
                 val remaining = allActions.filter { !excludeActionIds.contains(it.id) }
                 if (remaining.size <= 4) remaining else remaining.shuffled().take(4)
             } else {
-                val totalWeight = eligible.sumOf { it.uses }
                 val selected = mutableListOf<Action>()
                 val remainingUsages = eligible.toMutableList()
                 val usedActionIds = mutableSetOf<Int>()

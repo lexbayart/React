@@ -1,53 +1,65 @@
-# React
+# 🔴 React
 
-**Red pill for your brain.**
+**The red pill for your brain.**
 
-When you're stuck in a game, series, conversation, or work dead end — React helps you reset.
+You're stuck. In a game. In a series. In a conversation. In that gray fog where nothing matters and you can't remember a single thing you actually enjoy doing.
 
-## How it works
-1. Open the app
-2. Choose the emoji that matches your current state (8 options)
-3. Get 4 actions you've previously chosen for this state
-4. Tap an action — the app closes, and you go do it
+Your brain is full. RAM is maxed out. The good ideas — the ones that would actually make you happy — are buried under useless junk.
 
-The more often you choose an action, the higher its chance to appear next time.
+React doesn't ask "how are you?" It doesn't set reminders. It doesn't track your sleep.
 
-## Features
-- **8 states**: Gamer, Viewer, Talker, Sleeper, Zombie, Stuck, Anxious, Sad
-- **Weighted random**: Actions you choose more often appear more frequently
-- **Add custom actions**: Tap ➕ to add your own escape route
-- **Reshuffle**: Tap 🎲 to get a new set without repeats
-- **Statistics**: Long-press the title on the main screen to see your stats
-- **Export**: Share your stats as JSON and CSV files
-- **Dark/Light theme**: Follows your system setting
-- **Zero distractions**: No notifications, no questions, no accounts
+It just gives you **4 options**. Things you've chosen before when you felt exactly like this.
 
-## Tech stack
+👇 Tap an action. The app closes. You go do it.
+
+## 🎮 8 states
+
+Choose where you are right now:
+
+🎮 Gamer — stuck in a game loop  
+📺 Viewer — zombie-scrolling YouTube  
+💬 Talker — trapped in an endless conversation  
+😴 Sleeper — heavy after a meal  
+🔄 Zombie — doing nothing, staring at a wall  
+🔧 Stuck — work dead end, overworked  
+😰 Anxious — can't focus, worry spiral  
+😔 Sad — no energy, heavy heart  
+
+## 🎲 How it works
+
+1. Open React
+2. Tap the emoji that matches your state
+3. See 4 action cards
+4. Tap 🎲 to reshuffle (no repeats)
+5. Tap ➕ to add your own action
+6. Tap an action → app closes → you go do it
+
+The more often you choose an action, the more likely it appears next time.  
+No questions. No "did it help?" Just frequency. The app learns quietly.
+
+## 📊 Stats & export
+
+Long press anywhere on the main screen → see your top actions per state.  
+Export as JSON + CSV → share to Telegram, email, or analyze with AI.
+
+## 🧠 Philosophy
+
+This app is not a planner. Not a tracker. Not a notification machine.
+
+It's a **lifeline** for the moment your brain freezes.  
+The red pill. Choose to wake up. Choose to remember what you love.
+
+## 🛠 Tech
+
 - Kotlin + Jetpack Compose
-- Room for local storage
-- Material 3
-- Android 13 (API 33)
+- Room database (local only)
+- Android 13+
+- No internet. No accounts. No ads.
 
-## Development
-1. Clone the repository
-2. Open in Android Studio
-3. Connect a phone with USB debugging
-4. Press Run
+## 👤 Made by @lexbayart
 
-## Project structure
-- `MainActivity.kt` — entry point
-- `MainViewModel.kt` — state management
-- `ui/screens/` — screens (StateScreen, ActionScreen, StatsScreen)
-- `ui/theme/` — theme and typography
-- `data/database/` — Room Database, DAOs, Entities
-- `data/repository/` — selection logic (Weighted Random)
-- `utils/` — haptics, sounds, JSON/CSV export
+Private project. For personal use.
 
-## Database schema
-- **states**: 8 predefined states with emoji and name
-- **actions**: User-defined escape actions
-- **state_action_usage**: Tracks how many times each action was chosen per state
-- **logs**: Timestamped record of every action selection
+---
 
-## License
-Private
+*"When you're stuck, you don't need a survey. You need options."*

@@ -48,11 +48,12 @@ class MainActivity : ComponentActivity() {
             ReactTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
-                var states by mutableStateOf<List<State>?>(null)
-                var usages by mutableStateOf<List<StateActionUsage>?>(null)
-                var logs by mutableStateOf<List<Log>?>(null)
+                var states by mutableStateOf<List<State>>(emptyList())
+                var usages by mutableStateOf<List<StateActionUsage>>(emptyList())
+                var logs by mutableStateOf<List<Log>>(emptyList())
                 var totalSessions by mutableStateOf<Int>(0)
-                var allActions by mutableStateOf<List<Action>?>(null)
+                var allActions by mutableStateOf<List<Action>>(emptyList())
+                var dataLoaded by mutableStateOf(false)
 
                 // Load data in background
                 CoroutineScope(Dispatchers.IO).launch {
@@ -68,6 +69,7 @@ class MainActivity : ComponentActivity() {
                         logs = loadedLogs
                         totalSessions = loadedSessions
                         allActions = loadedActions
+                        dataLoaded = true
                     }
                 }
 
@@ -78,16 +80,15 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("state") {
-                            states?.let { st ->
+                            if (dataLoaded && states.isNotEmpty()) {
                                 StateScreen(
-                                    states = st,
+                                    states = states,
                                     onStateSelected = { stateId ->
                                         navController.navigate("action/$stateId")
                                     },
                                     onOpenStats = {
                                         navController.navigate("stats")
-                                    },
-                                    repository = repository
+                                    }
                                 )
                             }
                         }
@@ -106,16 +107,14 @@ class MainActivity : ComponentActivity() {
 
                         composable("stats") {
                             StatsScreen(
-                                states = states ?: emptyList(),
-                                usages = usages ?: emptyList(),
+                                states = states,
+                                usages = usages,
                                 totalSessions = totalSessions,
                                 onBack = { navController.popBackStack() },
                                 onExport = {
-                                    val currentLogs = logs ?: emptyList()
-                                    val currentUsages = usages ?: emptyList()
-                                    ExportUtils.exportStats(context, currentLogs, currentUsages)
+                                    ExportUtils.exportStats(context, logs, usages)
                                 },
-                                actions = allActions ?: emptyList()
+                                actions = allActions
                             )
                         }
                     }

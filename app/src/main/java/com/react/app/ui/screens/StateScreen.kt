@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,11 +38,8 @@ import kotlinx.coroutines.launch
 fun StateScreen(
     states: List<State>,
     onStateSelected: (Int) -> Unit,
-    onOpenStats: () -> Unit,
-    @Suppress("UNUSED_PARAMETER") repository: com.react.app.data.repository.ReactRepository
+    onOpenStats: () -> Unit
 ) {
-    val context = LocalContext.current
-
     var longPressTriggered by remember { mutableStateOf(false) }
 
     LaunchedEffect(longPressTriggered) {
@@ -53,54 +49,34 @@ fun StateScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        longPressTriggered = true
-                    },
-                    onTap = { }
-                )
-            },
-        horizontalAlignment = Alignment.CenterHorizontally
+                detectTapGestures(onLongPress = { longPressTriggered = true })
+            }
     ) {
-        // Title bar
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "React",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // 8 state buttons in 2 columns x 4 rows
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            for (row in 0 until 4) {
+            for (row in 0..3) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    val state1 = states[row * 2]
-                    val state2 = states[row * 2 + 1]
-
-                    StateButton(state1, onStateSelected, context)
-                    StateButton(state2, onStateSelected, context)
+                    for (col in 0..1) {
+                        val index = row * 2 + col
+                        val state = states.getOrNull(index)
+                        if (state != null) {
+                            StateButton(
+                                state = state,
+                                onClick = { onStateSelected(state.id) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -110,19 +86,21 @@ fun StateScreen(
 @Composable
 fun StateButton(
     state: State,
-    onStateSelected: (Int) -> Unit,
-    context: android.content.Context
+    onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scale = remember { Animatable(1f) }
-    val darkBg = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
+    val isDark = isDarkTheme(context)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(2.dp)
-            .background(darkBg, RoundedCornerShape(12.dp))
-            .scale(scale.value)
+            .background(
+                color = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF),
+                shape = RoundedCornerShape(12.dp)
+            )
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -130,11 +108,12 @@ fun StateButton(
                             context.triggerHapticAndSound()
                             scale.animateTo(0.95f, animationSpec = tween(100))
                             scale.animateTo(1f, animationSpec = tween(100))
-                            onStateSelected(state.id)
+                            onClick()
                         }
                     }
                 )
-            },
+            }
+            .scale(scale.value),
         contentAlignment = Alignment.Center
     ) {
         Text(

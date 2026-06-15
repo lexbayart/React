@@ -4,6 +4,23 @@
 
 # 🔴 React
 
+## 🔴 React v2.0 (Simplified)
+
+**Zero friction. Open → 4 actions → tap → escape.**
+
+No state selection. No emoji diagnosis. Just 4 cards with things you've chosen before.
+
+🎲 Don't like them? Reshuffle.
+➕ Missing something? Add your own action.
+
+---
+
+### 📦 Older version (v1.x — with 8 states)
+
+The classic version with state selection (🎮 Gamer, 📺 Viewer, etc.) is available in the [`main`](https://github.com/lexbayart/React/tree/main) branch and releases v1.0, v1.1.
+
+---
+
 ## 🧠 What is this?
 
 You know that feeling when you're stuck in a game, binge-watching YouTube, or just staring at the wall — and your brain is so full of junk that you can't remember a single thing you actually *enjoy* doing?
@@ -37,34 +54,20 @@ Or clone and build yourself.
 
 ---
 
-## 🎮 8 states
-
-Choose where you are right now:
-
-🎮 Gamer — stuck in a game loop  
-📺 Viewer — zombie-scrolling YouTube  
-💬 Talker — trapped in an endless conversation  
-😴 Sleeper — heavy after a meal  
-🔄 Zombie — doing nothing, staring at a wall  
-🔧 Stuck — work dead end, overworked  
-😰 Anxious — can't focus, worry spiral  
-😔 Sad — no energy, heavy heart  
-
 ## 🎲 How it works
 
 1. Open React
-2. Tap the emoji that matches your state
-3. See 4 action cards
-4. Tap 🎲 to reshuffle (no repeats)
-5. Tap ➕ to add your own action
-6. Tap an action → app closes → you go do it
+2. See 4 action cards
+3. Tap 🎲 to reshuffle (no repeats)
+4. Tap ➕ to add your own action
+5. Tap an action → app closes → you go do it
 
 The more often you choose an action, the more likely it appears next time.  
 No questions. No "did it help?" Just frequency. The app learns quietly.
 
 ## 📊 Stats & export
 
-Long press anywhere on the main screen → see your top actions per state.  
+Long press anywhere on the main screen → see your top actions.  
 Export as JSON + CSV → share to Telegram, email, or analyze with AI.
 
 ## 🧠 Philosophy
@@ -105,14 +108,13 @@ No Android Studio was manually touched. No Kotlin was handwritten. The entire co
 - Fixed compilation errors and layout bugs
 - Generated APK, installed on phone, tested
 - Created GitHub repo, made it public
-- Generated social preview, releases v1.0 and v1.1
+- Generated social preview, releases v1.0, v1.1, and v2.0
 
 ### What I (the human) did
 
 - Defined the philosophy: "red pill for your brain"
-- Identified 8 states of stuckness (🎮📺💬😴🔄🔧😰😔)
 - Specified the 4-card + 🎲 interface
-- Rejected features (no notifications, no questions, no timers)
+- Rejected features (no notifications, no questions, no timers, no state selection)
 - Tested the app, reported bugs, requested fixes
 - Designed the app icon (Neo + red pill + Matrix code rain)
 
@@ -126,7 +128,7 @@ This app proves that **non-developers can build real, useful Android apps** by c
 
 **Option 1: Download APK from Releases**
 
-Go to [Releases](https://github.com/lexbayart/React/releases) → download `app-debug.apk` → allow "Install from unknown sources" → open → tap your state → escape.
+Go to [Releases](https://github.com/lexbayart/React/releases) → download `app-debug.apk` → allow "Install from unknown sources" → open → tap your action → escape.
 
 **Option 2: Build from source**
 

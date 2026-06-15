@@ -18,4 +18,13 @@ interface ActionDao {
 
     @Query("DELETE FROM actions")
     suspend fun deleteAllActions()
+
+    @Query("UPDATE actions SET uses = uses + 1 WHERE id = :actionId")
+    suspend fun incrementUses(actionId: Int)
+
+    @Query("SELECT COUNT(*) FROM actions")
+    suspend fun getCount(): Int
+
+    @Query("SELECT * FROM actions ORDER BY uses DESC")
+    suspend fun getAllActionsSortedByUses(): List<Action>
 }

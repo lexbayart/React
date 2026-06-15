@@ -6,14 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [State::class, Action::class, StateActionUsage::class, Log::class],
-    version = 1,
+    entities = [Action::class, Log::class],
+    version = 2,
     exportSchema = false
 )
 abstract class ReactDatabase : RoomDatabase() {
-    abstract fun stateDao(): StateDao
     abstract fun actionDao(): ActionDao
-    abstract fun stateActionUsageDao(): StateActionUsageDao
     abstract fun logDao(): LogDao
 
     companion object {

@@ -1,13 +1,7 @@
 package com.react.app.ui.screens
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,13 +45,11 @@ import com.react.app.data.database.Action
 import com.react.app.data.repository.ReactRepository
 import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun ActionScreen(
-    stateId: Int,
-    onBack: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") onBack: () -> Unit,
     onCloseApp: () -> Unit,
     repository: ReactRepository
 ) {
@@ -67,14 +59,10 @@ fun ActionScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(stateId) {
+    LaunchedEffect(Unit) {
         scope.launch {
-            actions = repository.getWeightedRandomActions(stateId, excludeSet)
+            actions = repository.getWeightedRandomActions(excludeSet)
         }
-    }
-
-    BackHandler {
-        onBack()
     }
 
     val bgColor = if (isDarkTheme(context)) Color(0xFF121212) else Color(0xFFF5F5F5)
@@ -97,11 +85,11 @@ fun ActionScreen(
         ) {
             IconButton(onClick = {
                 context.triggerHapticAndSound()
-                onBack()
+                onCloseApp()
             }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    imageVector = Icons.Default.BarChart,
+                    contentDescription = "Stats",
                     tint = textColor
                 )
             }
@@ -151,7 +139,7 @@ fun ActionScreen(
                                     if (action != null) {
                                         context.triggerHapticAndSound()
                                         scope.launch {
-                                            repository.selectAction(stateId, action.id)
+                                            repository.selectAction(action.id)
                                         }
                                         onCloseApp()
                                     }
@@ -185,7 +173,7 @@ fun ActionScreen(
                                 diceScale.animateTo(0.9f, animationSpec = tween(100))
                                 diceScale.animateTo(1f, animationSpec = tween(100))
                                 excludeSet = actions.map { it.id }.toSet()
-                                actions = repository.getWeightedRandomActions(stateId, excludeSet)
+                                actions = repository.getWeightedRandomActions(excludeSet)
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -204,9 +192,9 @@ fun ActionScreen(
             onDismiss = { showAddDialog = false },
             onAdd = { title ->
                 scope.launch {
-                    repository.addAction(title, stateId)
+                    repository.addAction(title)
                     excludeSet = emptySet()
-                    actions = repository.getWeightedRandomActions(stateId, emptySet())
+                    actions = repository.getWeightedRandomActions(emptySet())
                     showAddDialog = false
                 }
             }
@@ -221,7 +209,7 @@ fun ActionCard(
     onClick: () -> Unit,
     cardBg: Color,
     textColor: Color,
-    scope: CoroutineScope
+    scope: kotlinx.coroutines.CoroutineScope
 ) {
     val scale = remember { Animatable(1f) }
     val isVisible = action != null
@@ -254,10 +242,10 @@ fun ActionCard(
         contentAlignment = Alignment.Center
     ) {
         if (isVisible) {
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = true,
-                enter = fadeIn() + slideInVertically { it / 4 },
-                exit = fadeOut() + slideOutVertically { it / 4 }
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it / 4 },
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { it / 4 }
             ) {
                 Text(
                     text = action!!.title,

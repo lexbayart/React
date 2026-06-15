@@ -19,11 +19,8 @@ import androidx.navigation.compose.rememberNavController
 import com.react.app.data.database.Action
 import com.react.app.data.database.Log
 import com.react.app.data.database.ReactDatabase
-import com.react.app.data.database.State
-import com.react.app.data.database.StateActionUsage
 import com.react.app.data.repository.ReactRepository
 import com.react.app.ui.screens.ActionScreen
-import com.react.app.ui.screens.StateScreen
 import com.react.app.ui.screens.StatsScreen
 import com.react.app.ui.theme.ReactTheme
 import com.react.app.utils.ExportUtils
@@ -48,8 +45,6 @@ class MainActivity : ComponentActivity() {
             ReactTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
-                var states by mutableStateOf<List<State>>(emptyList())
-                var usages by mutableStateOf<List<StateActionUsage>>(emptyList())
                 var logs by mutableStateOf<List<Log>>(emptyList())
                 var totalSessions by mutableStateOf<Int>(0)
                 var allActions by mutableStateOf<List<Action>>(emptyList())
@@ -58,14 +53,10 @@ class MainActivity : ComponentActivity() {
                 // Load data in background
                 CoroutineScope(Dispatchers.IO).launch {
                     repository.initializeDefaults()
-                    val loadedStates = repository.getAllStates()
-                    val loadedUsages = repository.getAllUsages()
                     val loadedLogs = repository.getAllLogs()
                     val loadedSessions = repository.getTotalSessions()
                     val loadedActions = repository.getAllActions()
                     withContext(Dispatchers.Main) {
-                        states = loadedStates
-                        usages = loadedUsages
                         logs = loadedLogs
                         totalSessions = loadedSessions
                         allActions = loadedActions
@@ -76,29 +67,13 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "state",
+                        startDestination = "action",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("state") {
-                            if (dataLoaded && states.isNotEmpty()) {
-                                StateScreen(
-                                    states = states,
-                                    onStateSelected = { stateId ->
-                                        navController.navigate("action/$stateId")
-                                    },
-                                    onOpenStats = {
-                                        navController.navigate("stats")
-                                    }
-                                )
-                            }
-                        }
-
-                        composable("action/{stateId}") { backStackEntry ->
-                            val stateId = backStackEntry.arguments?.getString("stateId")?.toIntOrNull()
-                            if (stateId != null) {
+                        composable("action") {
+                            if (dataLoaded) {
                                 ActionScreen(
-                                    stateId = stateId,
-                                    onBack = { navController.popBackStack() },
+                                    onBack = { /* already start destination */ },
                                     onCloseApp = { closeApp() },
                                     repository = repository
                                 )
@@ -107,12 +82,10 @@ class MainActivity : ComponentActivity() {
 
                         composable("stats") {
                             StatsScreen(
-                                states = states,
-                                usages = usages,
                                 totalSessions = totalSessions,
                                 onBack = { navController.popBackStack() },
                                 onExport = {
-                                    ExportUtils.exportStats(context, logs, usages)
+                                    ExportUtils.exportStats(context, logs, emptyList())
                                 },
                                 actions = allActions
                             )

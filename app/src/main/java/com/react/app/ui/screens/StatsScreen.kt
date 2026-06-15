@@ -31,15 +31,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.react.app.data.database.Action
-import com.react.app.data.database.State
-import com.react.app.data.database.StateActionUsage
 import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
 
 @Composable
 fun StatsScreen(
-    states: List<State>,
-    usages: List<StateActionUsage>,
     totalSessions: Int,
     onBack: () -> Unit,
     onExport: () -> Unit,
@@ -49,7 +45,8 @@ fun StatsScreen(
     val darkBg = if (isDarkTheme(context)) Color(0xFF121212) else Color(0xFFF5F5F5)
     val cardBg = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
     val textColor = if (isDarkTheme(context)) Color(0xFFFFFFFF) else Color(0xFF333333)
-    val actionMap = actions.associateBy { it.id }
+
+    val sortedActions = actions.sortedByDescending { it.uses }
 
     Column(
         modifier = Modifier
@@ -103,53 +100,52 @@ fun StatsScreen(
             )
         }
 
-        // Per-state stats
+        // Global action stats sorted by uses
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            for (state in states) {
-                val stateUsages = usages.filter { it.state_id == state.id }
-                    .sortedByDescending { it.uses }
-                    .take(5)
-
-                Column(
+            if (sortedActions.isEmpty()) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(cardBg, RoundedCornerShape(12.dp))
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "${state.emoji} ${state.name}",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        text = "No actions yet. Tap ➕ to add your first action.",
+                        fontSize = 14.sp,
+                        color = Color(0xFF999999),
+                        textAlign = TextAlign.Center
                     )
-
-                    if (stateUsages.isEmpty()) {
-                        Text(
-                            text = "No actions yet",
-                            fontSize = 14.sp,
-                            color = Color(0xFF999999)
-                        )
-                    } else {
-                        for ((idx, usage) in stateUsages.withIndex()) {
-                            val actionName = actionMap[usage.action_id]?.title ?: "Unknown action"
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "${idx + 1}. ${actionName} (${usage.uses}x)",
-                                    fontSize = 14.sp,
-                                    color = textColor
-                                )
-                            }
+                }
+            } else {
+                for ((idx, action) in sortedActions.withIndex()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(cardBg, RoundedCornerShape(12.dp))
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${idx + 1}. ${action.title}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = textColor
+                            )
+                            Text(
+                                text = "${action.uses}x",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF8C00)
+                            )
                         }
                     }
                 }

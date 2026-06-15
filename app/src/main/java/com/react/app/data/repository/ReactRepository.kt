@@ -3,33 +3,17 @@ package com.react.app.data.repository
 import com.react.app.data.database.Action
 import com.react.app.data.database.Log
 import com.react.app.data.database.ReactDatabase
-import com.react.app.data.database.State
-import com.react.app.data.database.StateActionUsage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class ReactRepository(private val database: ReactDatabase) {
 
-    private val stateDao = database.stateDao()
     private val actionDao = database.actionDao()
-    private val stateActionUsageDao = database.stateActionUsageDao()
     private val logDao = database.logDao()
 
     suspend fun initializeDefaults() = withContext(Dispatchers.IO) {
-        val statesAlreadyExist = stateDao.getAllStates().isNotEmpty()
-        if (statesAlreadyExist) return@withContext
-
-        val states = listOf(
-            State(1, "🎮", "Gamer"),
-            State(2, "📺", "Viewer"),
-            State(3, "💬", "Talker"),
-            State(4, "😴", "Sleeper"),
-            State(5, "🔄", "Zombie"),
-            State(6, "🔧", "Stuck"),
-            State(7, "😰", "Anxious"),
-            State(8, "😔", "Sad")
-        )
-        stateDao.insertStates(states)
+        val actionsAlreadyExist = actionDao.getCount() > 0
+        if (actionsAlreadyExist) return@withContext
 
         val defaultActions = listOf(
             "Walk in nature (forest/park)",
@@ -43,79 +27,48 @@ class ReactRepository(private val database: ReactDatabase) {
             "Watch a short movie/episode (20-30 min)",
             "Clean/organize one workspace"
         )
-        val actionIds = mutableListOf<Int>()
         for (title in defaultActions) {
-            val id = actionDao.insertAction(Action(title = title)).toInt()
-            actionIds.add(id)
+            actionDao.insertAction(Action(title = title))
         }
-
-        val allStates = stateDao.getAllStates()
-        val usages = mutableListOf<StateActionUsage>()
-        for (state in allStates) {
-            for (actionId in actionIds) {
-                usages.add(StateActionUsage(state.id, actionId, 0))
-            }
-        }
-        stateActionUsageDao.insertUsages(usages)
-    }
-
-    suspend fun getAllStates() = withContext(Dispatchers.IO) {
-        stateDao.getAllStates()
-    }
-
-    suspend fun getStateById(id: Int) = withContext(Dispatchers.IO) {
-        stateDao.getStateById(id)
     }
 
     suspend fun getAllActions() = withContext(Dispatchers.IO) {
         actionDao.getAllActions()
     }
 
-    suspend fun getUsagesByState(stateId: Int) = withContext(Dispatchers.IO) {
-        stateActionUsageDao.getUsagesByState(stateId)
-    }
-
-    suspend fun getWeightedRandomActions(stateId: Int, excludeActionIds: Set<Int> = emptySet()): List<Action> {
+    suspend fun getWeightedRandomActions(excludeActionIds: Set<Int> = emptySet()): List<Action> {
         return withContext(Dispatchers.IO) {
-            val usages = stateActionUsageDao.getUsagesByState(stateId)
             val allActions = actionDao.getAllActions()
-            val actionMap = allActions.associateBy { it.id }
+            val eligible = allActions.filter { !excludeActionIds.contains(it.id) }
 
-            val eligible = usages.filter { !excludeActionIds.contains(it.action_id) }
-
-            if (eligible.isEmpty()) {
-                val remaining = allActions.filter { !excludeActionIds.contains(it.id) }
-                if (remaining.size <= 4) remaining else remaining.shuffled().take(4)
-            } else {
+            if (eligible.size <= 4) eligible else {
                 val selected = mutableListOf<Action>()
-                val remainingUsages = eligible.toMutableList()
-                val usedActionIds = mutableSetOf<Int>()
+                val remaining = eligible.toMutableList()
+                val usedIds = mutableSetOf<Int>()
 
-                val count = minOf(4, remainingUsages.size)
+                val count = minOf(4, remaining.size)
                 for (i in 0 until count) {
-                    if (remainingUsages.isEmpty()) break
+                    if (remaining.isEmpty()) break
 
-                    val currentTotal = remainingUsages.sumOf { it.uses }
-                    val random = (1..currentTotal).random()
+                    val currentTotal = remaining.sumOf { it.uses }
+                    val random = if (currentTotal == 0) (1..1).random() else (1..currentTotal).random()
                     var cumulative = 0
-                    var chosen = remainingUsages[0]
+                    var chosen = remaining[0]
 
-                    for (usage in remainingUsages) {
-                        cumulative += usage.uses
+                    for (action in remaining) {
+                        cumulative += action.uses
                         if (random <= cumulative) {
-                            chosen = usage
+                            chosen = action
                             break
                         }
                     }
 
-                    actionMap[chosen.action_id]?.let { action ->
-                        if (!usedActionIds.contains(action.id)) {
-                            selected.add(action)
-                            usedActionIds.add(action.id)
-                        }
+                    if (!usedIds.contains(chosen.id)) {
+                        selected.add(chosen)
+                        usedIds.add(chosen.id)
                     }
 
-                    remainingUsages.removeAll { it.action_id == chosen.action_id }
+                    remaining.removeAll { it.id == chosen.id }
                 }
 
                 selected
@@ -123,28 +76,26 @@ class ReactRepository(private val database: ReactDatabase) {
         }
     }
 
-    suspend fun addAction(title: String, stateId: Int): Int {
+    suspend fun addAction(title: String): Int {
         return withContext(Dispatchers.IO) {
-            val actionId = actionDao.insertAction(Action(title = title)).toInt()
-            stateActionUsageDao.insertUsage(StateActionUsage(stateId, actionId, 0))
-            actionId
+            actionDao.insertAction(Action(title = title)).toInt()
         }
     }
 
-    suspend fun selectAction(stateId: Int, actionId: Int) = withContext(Dispatchers.IO) {
-        stateActionUsageDao.incrementUsage(stateId, actionId)
-        logDao.insertLog(Log(timestamp = System.currentTimeMillis(), state_id = stateId, action_id = actionId))
+    suspend fun selectAction(actionId: Int) = withContext(Dispatchers.IO) {
+        actionDao.incrementUses(actionId)
+        logDao.insertLog(Log(timestamp = System.currentTimeMillis(), action_id = actionId))
     }
 
     suspend fun getAllLogs() = withContext(Dispatchers.IO) {
         logDao.getAllLogs()
     }
 
-    suspend fun getAllUsages() = withContext(Dispatchers.IO) {
-        stateActionUsageDao.getAllUsages()
-    }
-
     suspend fun getTotalSessions() = withContext(Dispatchers.IO) {
         logDao.getTotalLogCount()
+    }
+
+    suspend fun getAllActionsSortedByUses() = withContext(Dispatchers.IO) {
+        actionDao.getAllActionsSortedByUses()
     }
 }

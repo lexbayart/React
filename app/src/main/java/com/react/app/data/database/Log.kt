@@ -7,6 +7,5 @@ import androidx.room.PrimaryKey
 data class Log(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val timestamp: Long,
-    val state_id: Int,
     val action_id: Int
 )

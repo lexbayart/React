@@ -4,25 +4,25 @@
 
 # 🔴 React
 
-## You're stuck. Again.
+## You've tried every to-do app. Every habit tracker. Every reminder.
 
-In a game. In YouTube. In a conversation that should have ended. In a scroll that brings nothing but fatigue.
+They all made things worse. Endless lists. Deadlines. Guilt.
 
-You know there are things you could do. Good things. Things that actually make you happy. But your brain — it's like a full hard drive. **You can't remember a single one.**
+Your problem isn't discipline. It's amnesia.
 
-You've tried todo lists. They're endless. They crush you. They remind you of what you *should* do, not what you *want* to do.
+When you're stuck — in a game, in YouTube, in a scroll — your brain freezes. You can't remember a single thing you actually enjoy doing.
 
-You've tried reminders. They annoy you.
+**React is not a to-do list.**
 
-You've tried habit trackers. They turn life into a spreadsheet.
+It's 4 buttons. Things you've chosen before. Tap one. The app closes. You go do it.
 
-And every time — the same thing. Some kind of **amnesia** cuts off your ability to switch. You stay stuck, even though deep down you know there's another way.
+No lists. No questions. No guilt.
+
+For those who've tried everything — and just want to escape.
 
 ---
 
-## React is not another planner.
-
-It's the **red pill** for when your brain freezes.
+## React is the red pill for when your brain freezes.
 
 No "how are you?"
 No scheduled reminders.

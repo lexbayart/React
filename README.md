@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="social-preview.png" width="120" alt="React App Icon">
+</p>
+
 # 🔴 React
 
 ## 🧠 What is this?

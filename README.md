@@ -95,7 +95,7 @@ It proves that you don't need to know how to code to build something useful. You
 
 ---
 
-## 👤 Made by @lexbayart
+## 👤 Made by @lexbay
 
 Open source. For everyone.
 

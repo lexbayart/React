@@ -1,7 +1,5 @@
 package com.react.app.ui.screens
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,15 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,22 +35,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.react.app.data.database.Action
 import com.react.app.data.repository.ReactRepository
-import com.react.app.utils.isDarkTheme
 import com.react.app.utils.triggerHapticAndSound
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun ActionScreen(
-    @Suppress("UNUSED_PARAMETER") onBack: () -> Unit,
+    onBack: () -> Unit,
     onCloseApp: () -> Unit,
     repository: ReactRepository
 ) {
@@ -65,126 +64,73 @@ fun ActionScreen(
         }
     }
 
-    val bgColor = if (isDarkTheme(context)) Color(0xFF121212) else Color(0xFFF5F5F5)
-    val cardBg = if (isDarkTheme(context)) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-    val textColor = if (isDarkTheme(context)) Color(0xFFFFFFFF) else Color(0xFF333333)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color(0xFFF5F5F5))
+            .padding(16.dp)
     ) {
-        // Top bar
+        // Top bar with back button
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = {
-                context.triggerHapticAndSound()
-                onCloseApp()
-            }) {
-                Icon(
-                    imageVector = Icons.Default.BarChart,
-                    contentDescription = "Stats",
-                    tint = textColor
-                )
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-
-            Spacer(modifier = Modifier.width(48.dp))
-
-            IconButton(onClick = {
-                context.triggerHapticAndSound()
-                showAddDialog = true
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add action",
-                    tint = Color(0xFFFF8C00)
-                )
+            Text("React", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            IconButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add", tint = Color(0xFFE53935))
             }
         }
 
-        // 2x2 grid of action cards
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                for (row in 0 until 2) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        for (col in 0 until 2) {
-                            val index = row * 2 + col
-                            val action = actions.getOrNull(index)
+        Spacer(modifier = Modifier.height(16.dp))
 
-                            ActionCard(
-                                action = action,
-                                index = index,
-                                onClick = {
-                                    if (action != null) {
-                                        context.triggerHapticAndSound()
-                                        scope.launch {
-                                            repository.selectAction(action.id)
-                                        }
-                                        onCloseApp()
-                                    }
-                                },
-                                cardBg = cardBg,
-                                textColor = textColor,
-                                scope = scope
-                            )
+        // 4 cards in vertical column
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            for (i in 0..3) {
+                ActionCard(
+                    action = actions.getOrNull(i),
+                    onClick = {
+                        val action = actions.getOrNull(i) ?: return@ActionCard
+                        context.triggerHapticAndSound()
+                        scope.launch {
+                            repository.selectAction(action.id)
+                            delay(50)
+                            onCloseApp()
                         }
                     }
-                }
-            }
-
-            // Centered dice button
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .align(Alignment.Center),
-                contentAlignment = Alignment.Center
-            ) {
-                val diceScale = remember { Animatable(1f) }
-
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .scale(diceScale.value)
-                        .background(Color(0xFFFF8C00), CircleShape)
-                        .clickable {
-                            context.triggerHapticAndSound()
-                            scope.launch {
-                                diceScale.animateTo(0.9f, animationSpec = tween(100))
-                                diceScale.animateTo(1f, animationSpec = tween(100))
-                                excludeSet = actions.map { it.id }.toSet()
-                                actions = repository.getWeightedRandomActions(excludeSet)
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🎲",
-                        fontSize = 32.sp
-                    )
-                }
+                )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Red dice button centered at bottom
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    context.triggerHapticAndSound()
+                    scope.launch {
+                        excludeSet = actions.map { it.id }.toSet()
+                        actions = repository.getWeightedRandomActions(excludeSet)
+                    }
+                },
+                containerColor = Color(0xFFE53935),
+                modifier = Modifier.size(72.dp)
+            ) {
+                Text("🎲", fontSize = 36.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 
     if (showAddDialog) {
@@ -205,62 +151,34 @@ fun ActionScreen(
 @Composable
 fun ActionCard(
     action: Action?,
-    @Suppress("UNUSED_PARAMETER") index: Int,
-    onClick: () -> Unit,
-    cardBg: Color,
-    textColor: Color,
-    scope: kotlinx.coroutines.CoroutineScope
+    onClick: () -> Unit
 ) {
-    val scale = remember { Animatable(1f) }
-    val isVisible = action != null
+    val cardBg = Color(0xFFFFFFFF)
+    val textColor = Color(0xFF212121)
 
-    Box(
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp)
-            .background(cardBg, RoundedCornerShape(16.dp))
-            .then(
-                if (action != null) {
-                    Modifier.scale(scale.value)
-                } else {
-                    Modifier
-                }
-            )
-            .then(
-                if (action != null) {
-                    Modifier.clickable {
-                        scope.launch {
-                            scale.animateTo(0.95f, animationSpec = tween(100))
-                            scale.animateTo(1f, animationSpec = tween(100))
-                            onClick()
-                        }
-                    }
-                } else {
-                    Modifier
-                }
-            ),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .height(100.dp)
+            .clickable(enabled = action != null) { onClick() },
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        if (isVisible) {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = true,
-                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it / 4 },
-                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { it / 4 }
-            ) {
-                Text(
-                    text = action!!.title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    color = textColor,
-                    modifier = Modifier.padding(24.dp)
-                )
-            }
-        } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
             Text(
-                text = "...",
-                fontSize = 24.sp,
-                color = Color(0xFF999999)
+                text = action?.emoji ?: "❓",
+                fontSize = 40.sp
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = action?.title ?: "???",
+                fontSize = 16.sp,
+                color = textColor,
+                fontWeight = FontWeight.Medium
             )
         }
     }

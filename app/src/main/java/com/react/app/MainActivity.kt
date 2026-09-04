@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            ReactTheme {
+            ReactTheme(darkTheme = false) {
                 val navController = rememberNavController()
                 val context = LocalContext.current
                 var logs by mutableStateOf<List<Log>>(emptyList())

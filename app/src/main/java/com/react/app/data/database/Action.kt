@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Action(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
+    val emoji: String = "⚡",
     val uses: Int = 0
 )

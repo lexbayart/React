@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [Action::class, Log::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class ReactDatabase : RoomDatabase() {
@@ -24,7 +24,7 @@ abstract class ReactDatabase : RoomDatabase() {
                     context.applicationContext,
                     ReactDatabase::class.java,
                     "react_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

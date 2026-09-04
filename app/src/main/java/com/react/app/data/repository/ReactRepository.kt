@@ -12,23 +12,26 @@ class ReactRepository(private val database: ReactDatabase) {
     private val logDao = database.logDao()
 
     suspend fun initializeDefaults() = withContext(Dispatchers.IO) {
-        val actionsAlreadyExist = actionDao.getCount() > 0
-        if (actionsAlreadyExist) return@withContext
+        val count = actionDao.getCount()
+        android.util.Log.d("ReactRepo", "Current action count: $count")
+        if (count > 0) return@withContext
+
+        android.util.Log.d("ReactRepo", "Inserting 10 default actions")
 
         val defaultActions = listOf(
-            "Walk in nature (forest/park)",
-            "Start a new pet project (coding)",
-            "Cook something tasty",
-            "Call a friend or family",
-            "Sleep for 20-30 minutes",
-            "Read a book/article",
-            "Do short exercise/stretching",
-            "Write a warm message to someone",
-            "Watch a short movie/episode (20-30 min)",
-            "Clean/organize one workspace"
+            "🌳 Walk in nature (forest/park)" to "🌳",
+            "💻 Start a new pet project (coding)" to "💻",
+            "🍳 Cook something tasty" to "🍳",
+            "📞 Call a friend or family" to "📞",
+            "😴 Sleep for 20-30 minutes" to "😴",
+            "📖 Read a book/article" to "📖",
+            "🏋️ Do short exercise/stretching" to "🏋️",
+            "💬 Write a warm message to someone" to "💬",
+            "🎬 Watch a short movie/episode (20-30 min)" to "🎬",
+            "🧹 Clean/organize one workspace" to "🧹"
         )
-        for (title in defaultActions) {
-            actionDao.insertAction(Action(title = title))
+        for ((title, emoji) in defaultActions) {
+            actionDao.insertAction(Action(title = title, emoji = emoji))
         }
     }
 
@@ -41,44 +44,60 @@ class ReactRepository(private val database: ReactDatabase) {
             val allActions = actionDao.getAllActions()
             val eligible = allActions.filter { !excludeActionIds.contains(it.id) }
 
-            if (eligible.size <= 4) eligible else {
-                val selected = mutableListOf<Action>()
-                val remaining = eligible.toMutableList()
-                val usedIds = mutableSetOf<Int>()
+            if (eligible.isEmpty()) return@withContext emptyList()
 
-                val count = minOf(4, remaining.size)
-                for (i in 0 until count) {
-                    if (remaining.isEmpty()) break
+            val selected = mutableListOf<Action>()
+            val remaining = eligible.toMutableList()
+            val usedIds = mutableSetOf<Int>()
 
-                    val currentTotal = remaining.sumOf { it.uses }
-                    val random = if (currentTotal == 0) (1..1).random() else (1..currentTotal).random()
-                    var cumulative = 0
-                    var chosen = remaining[0]
-
-                    for (action in remaining) {
-                        cumulative += action.uses
-                        if (random <= cumulative) {
-                            chosen = action
-                            break
-                        }
-                    }
-
-                    if (!usedIds.contains(chosen.id)) {
-                        selected.add(chosen)
-                        usedIds.add(chosen.id)
-                    }
-
-                    remaining.removeAll { it.id == chosen.id }
+            while (selected.size < 4) {
+                if (remaining.isEmpty()) {
+                    val allAvailable = allActions.filter { !usedIds.contains(it.id) }
+                    if (allAvailable.isEmpty()) break
+                    remaining.addAll(allAvailable)
                 }
 
-                selected
+                val currentTotal = remaining.sumOf { it.uses }
+                val random = if (currentTotal == 0) (1..1).random() else (1..currentTotal).random()
+                var cumulative = 0
+                var chosen = remaining[0]
+
+                for (action in remaining) {
+                    cumulative += action.uses
+                    if (random <= cumulative) {
+                        chosen = action
+                        break
+                    }
+                }
+
+                if (!usedIds.contains(chosen.id)) {
+                    selected.add(chosen)
+                    usedIds.add(chosen.id)
+                }
+
+                remaining.removeAll { it.id == chosen.id }
             }
+
+            selected
         }
     }
 
     suspend fun addAction(title: String): Int {
         return withContext(Dispatchers.IO) {
-            actionDao.insertAction(Action(title = title)).toInt()
+            val emoji = when {
+                title.contains("🌳") -> "🌳"
+                title.contains("💻") -> "💻"
+                title.contains("🍳") -> "🍳"
+                title.contains("📞") -> "📞"
+                title.contains("😴") -> "😴"
+                title.contains("📖") -> "📖"
+                title.contains("🏋️") -> "🏋️"
+                title.contains("💬") -> "💬"
+                title.contains("🎬") -> "🎬"
+                title.contains("🧹") -> "🧹"
+                else -> "⚡"
+            }
+            actionDao.insertAction(Action(title = title, emoji = emoji)).toInt()
         }
     }
 
